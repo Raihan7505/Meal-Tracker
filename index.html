@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0a0f1e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="মেস মিল" />
+  <title>মেস মিল ট্র্যাকার</title>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#0a0f1e; --green:#10b981; --green-glow:rgba(16,185,129,0.25); --green-dark:#059669;
+      --yellow:#f59e0b; --purple:#8b5cf6; --red:#ef4444;
+      --text:#f0fdf4; --muted:#6b7280; --border:rgba(255,255,255,0.08); --border-green:rgba(16,185,129,0.2);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;font-family:'Hind Siliguri',sans-serif;color:var(--text)}
+    body{background:var(--bg);background-image:radial-gradient(ellipse at 20% 20%,rgba(16,185,129,.07) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(139,92,246,.05) 0%,transparent 50%);min-height:100vh;padding-bottom:90px}
+
+    /* ===== AUTH SCREENS ===== */
+    .auth-screen{position:fixed;inset:0;background:var(--bg);background-image:radial-gradient(ellipse at 30% 30%,rgba(16,185,129,.1) 0%,transparent 60%),radial-gradient(ellipse at 70% 80%,rgba(139,92,246,.07) 0%,transparent 50%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 22px;z-index:2000;overflow-y:auto}
+    .auth-logo{font-size:56px;margin-bottom:14px;filter:drop-shadow(0 0 24px rgba(16,185,129,.5));animation:logoPulse 3s ease-in-out infinite}
+    @keyframes logoPulse{0%,100%{filter:drop-shadow(0 0 24px rgba(16,185,129,.5))}50%{filter:drop-shadow(0 0 40px rgba(16,185,129,.8))}}
+    .auth-title{font-size:26px;font-weight:800;color:var(--green);margin-bottom:4px;letter-spacing:-.5px}
+    .auth-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:32px;line-height:1.7}
+    .auth-card{width:100%;max-width:380px;background:rgba(255,255,255,.04);border:1px solid var(--border-green);border-radius:20px;padding:24px 20px}
+    .auth-tabs{display:flex;background:rgba(255,255,255,.05);border-radius:12px;padding:4px;gap:3px;margin-bottom:22px}
+    .auth-tab{flex:1;padding:9px 0;border:none;border-radius:9px;font-family:'Hind Siliguri',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+    .auth-tab.active{background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;box-shadow:0 2px 10px var(--green-glow)}
+    .auth-tab:not(.active){background:transparent;color:var(--muted)}
+    .auth-label{font-size:11px;color:#9ca3af;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;display:block}
+    .auth-input{width:100%;padding:13px 16px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);font-family:'Hind Siliguri',sans-serif;font-size:15px;margin-bottom:14px;outline:none;transition:border-color .2s}
+    .auth-input:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-glow)}
+    .auth-input::placeholder{color:var(--muted)}
+    .auth-hint{font-size:11px;color:var(--muted);margin-top:-10px;margin-bottom:14px;padding-left:4px}
+    .auth-btn{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;font-family:'Hind Siliguri',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;box-shadow:0 4px 24px var(--green-glow);transition:transform .15s,box-shadow .15s}
+    .auth-btn:active{transform:scale(.98)}
+    .auth-btn:disabled{opacity:.5;cursor:default}
+    .auth-err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:12px;display:none}
+
+    /* ===== SETUP — username screen ===== */
+    #username-screen{position:fixed;inset:0;background:var(--bg);background-image:radial-gradient(ellipse at 30% 30%,rgba(16,185,129,.1) 0%,transparent 60%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 22px;z-index:1500;overflow-y:auto}
+    .setup-logo{font-size:52px;margin-bottom:12px;filter:drop-shadow(0 0 20px rgba(16,185,129,.4))}
+    .setup-title{font-size:24px;font-weight:800;color:var(--green);margin-bottom:6px;letter-spacing:-.5px}
+    .setup-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:28px;line-height:1.7}
+    .setup-card{width:100%;max-width:380px;background:rgba(255,255,255,.04);border:1px solid var(--border-green);border-radius:20px;padding:24px 20px}
+    .setup-label{font-size:11px;color:#9ca3af;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.5px}
+    .setup-input{width:100%;padding:13px 16px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);font-family:'Hind Siliguri',sans-serif;font-size:15px;margin-bottom:8px;outline:none;transition:border-color .2s}
+    .setup-input:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-glow)}
+    .setup-hint{font-size:11px;color:var(--muted);margin-bottom:16px;padding-left:4px}
+    .setup-btn{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;font-family:'Hind Siliguri',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;box-shadow:0 4px 24px var(--green-glow)}
+    .setup-btn:active{transform:scale(.98)}
+    .setup-err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:12px;display:none}
+
+    /* ===== MEAL SETTINGS ===== */
+    #meal-settings-screen{position:fixed;inset:0;background:var(--bg);background-image:radial-gradient(ellipse at 30% 30%,rgba(16,185,129,.1) 0%,transparent 60%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 22px;z-index:1400;overflow-y:auto}
+    .ms-card-wrap{width:100%;max-width:400px}
+    .ms-meal-item{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;padding:12px 16px;margin-bottom:10px}
+    .ms-meal-info{display:flex;flex-direction:column;gap:3px}
+    .ms-meal-name-input{background:transparent;border:none;color:var(--text);font-family:'Hind Siliguri',sans-serif;font-size:15px;font-weight:700;outline:none;width:160px;border-bottom:1px dashed var(--border)}
+    .ms-meal-name-input:focus{border-bottom-color:var(--green)}
+    .ms-meal-time{font-size:11px;color:var(--muted)}
+    .toggle-switch{position:relative;width:44px;height:24px;cursor:pointer}
+    .toggle-switch input{opacity:0;width:0;height:0}
+    .toggle-slider{position:absolute;inset:0;background:rgba(255,255,255,.15);border-radius:24px;transition:.3s}
+    .toggle-slider:before{content:"";position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s}
+    input:checked + .toggle-slider{background:var(--green)}
+    input:checked + .toggle-slider:before{transform:translateX(20px)}
+    .add-meal-row{display:flex;gap:8px;margin-bottom:14px}
+    .add-meal-input{flex:1;padding:11px 14px;border-radius:11px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);font-family:'Hind Siliguri',sans-serif;font-size:14px;outline:none}
+    .add-meal-input:focus{border-color:var(--green)}
+    .add-meal-btn{padding:11px 14px;border-radius:11px;border:none;background:rgba(16,185,129,.15);color:var(--green);font-family:'Hind Siliguri',sans-serif;font-size:18px;font-weight:700;cursor:pointer;border:1px solid rgba(16,185,129,.2)}
+
+    /* ===== HEADER ===== */
+    .header{position:sticky;top:0;z-index:100;background:rgba(10,15,30,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-green);padding:11px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .header-left{display:flex;align-items:center;gap:10px;min-width:0}
+    .header-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--green),var(--green-dark));display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 12px var(--green-glow);flex-shrink:0}
+    .header-title{font-size:14px;font-weight:800;letter-spacing:-.3px;white-space:nowrap}
+    .header-sub{font-size:10px;color:#6ee7b7;margin-top:1px;white-space:nowrap}
+    .header-right{display:flex;align-items:center;gap:7px;flex-shrink:0}
+    .user-badge{background:rgba(16,185,129,.12);color:var(--green);padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid rgba(16,185,129,.22);white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis}
+    .add-member-btn{background:rgba(139,92,246,.12);color:var(--purple);border:1px solid rgba(139,92,246,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Hind Siliguri',sans-serif}
+    .add-member-btn:active{background:rgba(139,92,246,.25)}
+    .logout-btn{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2);border-radius:20px;padding:5px 8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Hind Siliguri',sans-serif}
+
+    /* ===== ADD MEMBERS MODAL ===== */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:500;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .modal-sheet{width:100%;max-width:480px;background:#0f1628;border:1px solid var(--border-green);border-radius:22px 22px 0 0;padding:22px 20px 36px;animation:slideSheet .25s ease}
+    @keyframes slideSheet{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .modal-handle{width:38px;height:4px;border-radius:4px;background:rgba(255,255,255,.15);margin:0 auto 18px}
+    .modal-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px}
+    .modal-sub{font-size:12px;color:var(--muted);margin-bottom:18px}
+    .modal-input-row{display:flex;gap:8px;margin-bottom:14px}
+    .modal-input{flex:1;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);font-family:'Hind Siliguri',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+    .modal-input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(139,92,246,.15)}
+    .modal-add-btn{padding:12px 16px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--purple),#7c3aed);color:#fff;font-family:'Hind Siliguri',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+    .modal-member-list{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto}
+    .modal-member-item{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:11px 14px}
+    .modal-member-item.owner{border-color:rgba(16,185,129,.25)}
+    .modal-member-name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+    .owner-tag{font-size:10px;background:rgba(16,185,129,.15);color:var(--green);padding:2px 8px;border-radius:9px}
+    .you-tag{font-size:10px;background:rgba(139,92,246,.15);color:var(--purple);padding:2px 8px;border-radius:9px}
+    .remove-member-btn{width:26px;height:26px;border-radius:8px;border:none;background:rgba(239,68,68,.12);color:var(--red);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+    .modal-close-btn{width:100%;padding:13px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Hind Siliguri',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:16px}
+    .modal-err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:9px 13px;font-size:12px;color:var(--red);margin-bottom:10px;display:none}
+
+    /* ===== TABS ===== */
+    .tabs{display:flex;margin:14px 14px 0;background:rgba(255,255,255,.04);border-radius:13px;padding:4px;gap:3px}
+    .tab{flex:1;padding:8px 0;border:none;border-radius:10px;font-family:'Hind Siliguri',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+    .tab.active{background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;box-shadow:0 2px 10px var(--green-glow)}
+    .tab:not(.active){background:transparent;color:var(--muted)}
+
+    /* ===== MONTH NAV ===== */
+    .month-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 8px}
+    .month-nav button{width:32px;height:32px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .month-nav button:active{background:rgba(16,185,129,.15)}
+    .month-title{font-size:14px;font-weight:700;color:#6ee7b7}
+
+    /* ===== CALENDAR ===== */
+    .cal-days-header{display:grid;grid-template-columns:repeat(7,1fr);padding:0 10px}
+    .cal-day-name{text-align:center;font-size:11px;color:var(--muted);padding:4px 0}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);padding:4px 10px;gap:3px}
+    .cal-cell{border-radius:10px;border:1.5px solid transparent;background:rgba(255,255,255,.03);padding:5px 2px 4px;cursor:pointer;text-align:center;transition:all .15s;min-height:52px;display:flex;flex-direction:column;align-items:center;gap:2px}
+    .cal-cell.has-record{background:rgba(16,185,129,.05)}
+    .cal-cell.today{border-color:rgba(16,185,129,.4)}
+    .cal-cell.selected{border-color:var(--green);background:rgba(16,185,129,.1)}
+    .cal-cell:active{transform:scale(.93)}
+    .cal-num{font-size:13px;font-weight:500}
+    .cal-cell.today .cal-num{color:var(--green);font-weight:800}
+    .cal-dots{display:flex;gap:1px;min-height:13px;align-items:center;flex-wrap:wrap;justify-content:center}
+    .cal-dot{width:5px;height:5px;border-radius:50%}
+
+    /* ===== DAY PANEL ===== */
+    .day-panel{margin:10px 12px 0;background:rgba(255,255,255,.04);border-radius:16px;border:1px solid var(--border-green);overflow:hidden;animation:slideUp .2s ease}
+    .day-panel-header{padding:11px 15px 9px;border-bottom:1px solid var(--border);background:rgba(16,185,129,.05)}
+    .day-panel-date{font-size:13px;color:#6ee7b7;font-weight:700}
+    .day-panel-hint{font-size:11px;color:var(--muted);margin-top:2px}
+    .member-row{display:flex;align-items:center;padding:10px 15px;border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap}
+    .member-row:last-child{border-bottom:none}
+    .member-name{flex:1;font-size:14px;font-weight:600;min-width:80px}
+    .me-tag{font-size:10px;background:rgba(16,185,129,.15);color:var(--green);padding:2px 7px;border-radius:9px;margin-left:4px}
+    .meal-toggles{display:flex;gap:6px;flex-wrap:wrap}
+    .meal-toggle{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:50px}
+    .meal-toggle button{padding:5px 10px;border-radius:18px;border:none;font-family:'Hind Siliguri',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
+    .meal-toggle button:active{transform:scale(.94)}
+    .m-label{font-size:10px;color:var(--muted)}
+    .btn-off{background:rgba(239,68,68,.15);color:var(--red)}
+    .btn-on{background:rgba(16,185,129,.15);color:var(--green)}
+    .btn-disabled{background:rgba(255,255,255,.05);color:var(--muted);cursor:default!important}
+
+    /* ===== SUMMARY ===== */
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 12px}
+    .stat-card{background:rgba(255,255,255,.04);border-radius:13px;padding:11px 5px;text-align:center}
+    .stat-card.green{border:1px solid rgba(16,185,129,.2)}
+    .stat-card.yellow{border:1px solid rgba(245,158,11,.2)}
+    .stat-card.purple{border:1px solid rgba(139,92,246,.2)}
+    .stat-num{font-size:22px;font-weight:800}
+    .stat-card.green .stat-num{color:var(--green)}
+    .stat-card.yellow .stat-num{color:var(--yellow)}
+    .stat-card.purple .stat-num{color:var(--purple)}
+    .stat-label{font-size:10px;color:var(--muted);margin-top:1px}
+    .member-summary{margin:0 12px;display:flex;flex-direction:column;gap:8px}
+    .ms-card{background:rgba(255,255,255,.04);border-radius:14px;padding:13px 15px;border:1px solid var(--border)}
+    .ms-name{font-size:14px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+    .ms-stats{display:flex;gap:8px}
+    .ms-stat{flex:1;text-align:center;background:rgba(255,255,255,.04);border-radius:10px;padding:8px 4px}
+    .ms-stat-num{font-size:18px;font-weight:800}
+    .ms-stat-label{font-size:10px;color:var(--muted)}
+
+    /* ===== COST ===== */
+    .section-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:14px 14px 8px}
+    .total-fund-card{margin:0 12px 10px;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+    .fund-label{font-size:12px;color:#6ee7b7;font-weight:600}
+    .fund-amount{font-size:22px;font-weight:800;color:var(--green)}
+    .fund-sub{font-size:11px;color:var(--muted);margin-top:2px}
+    .per-meal-badge{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:8px 12px;text-align:center}
+    .per-meal-num{font-size:18px;font-weight:800;color:var(--yellow)}
+    .per-meal-label{font-size:10px;color:var(--muted)}
+    .member-cost-card{margin:0 12px 8px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+    .member-cost-card.overpaid{border-color:rgba(16,185,129,.3)}
+    .member-cost-card.underpaid{border-color:rgba(239,68,68,.25)}
+    .mc-top{padding:12px 15px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+    .mc-name{font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
+    .mc-deposit-area{display:flex;align-items:center;gap:8px}
+    .deposit-input{width:95px;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--text);font-family:'Hind Siliguri',sans-serif;font-size:13px;font-weight:600;outline:none;text-align:right}
+    .deposit-input:focus{border-color:var(--green)}
+    .deposit-save-btn{padding:7px 11px;border-radius:9px;border:none;background:var(--green);color:#fff;font-family:'Hind Siliguri',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+    .deposit-save-btn:active{background:var(--green-dark)}
+    .mc-stats{padding:10px 15px 12px;display:flex}
+    .mc-stat{flex:1;text-align:center}
+    .mc-stat+.mc-stat{border-left:1px solid var(--border)}
+    .mc-stat-num{font-size:16px;font-weight:800}
+    .mc-stat-label{font-size:10px;color:var(--muted);margin-top:1px}
+    .balance-pill{margin:0 15px 12px;padding:9px 13px;border-radius:10px;font-size:13px;font-weight:700;text-align:center}
+    .balance-pill.positive{background:rgba(16,185,129,.12);color:var(--green)}
+    .balance-pill.negative{background:rgba(239,68,68,.12);color:var(--red)}
+    .balance-pill.zero{background:rgba(255,255,255,.06);color:var(--muted)}
+    .deposit-lock{font-size:12px;color:var(--muted);background:rgba(255,255,255,.04);padding:7px 11px;border-radius:9px;border:1px solid var(--border)}
+
+    /* ===== MISC ===== */
+    .legend{display:flex;gap:14px;padding:10px 14px 0;justify-content:center;flex-wrap:wrap}
+    .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+    .hidden{display:none!important}
+    .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;padding:10px 22px;border-radius:50px;font-weight:700;font-size:13px;box-shadow:0 4px 20px var(--green-glow);white-space:nowrap;z-index:9999;pointer-events:none;animation:fadeUp .2s ease;font-family:'Hind Siliguri',sans-serif}
+    .online-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px;animation:pulse 2s infinite}
+    .loading-spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  </style>
+</head>
+<body>
+
+<!-- ===== AUTH SCREEN ===== -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-logo">🍽️</div>
+  <div class="auth-title">মেস মিল ট্র্যাকার</div>
+  <div class="auth-sub">সবার মিল এক জায়গায় ট্র্যাক করুন</div>
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">লগইন</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">সাইন আপ</button>
+    </div>
+    <div id="auth-err" class="auth-err"></div>
+    <!-- LOGIN -->
+    <div id="login-form">
+      <label class="auth-label">ইমেইল</label>
+      <input class="auth-input" id="login-email" type="email" placeholder="আপনার ইমেইল" />
+      <label class="auth-label">পাসওয়ার্ড</label>
+      <input class="auth-input" id="login-pass" type="password" placeholder="পাসওয়ার্ড" />
+      <button class="auth-btn" id="btn-login" onclick="doLogin()">লগইন করুন →</button>
+    </div>
+    <!-- SIGNUP -->
+    <div id="signup-form" class="hidden">
+      <label class="auth-label">ইমেইল</label>
+      <input class="auth-input" id="signup-email" type="email" placeholder="আপনার ইমেইল" />
+      <label class="auth-label">পাসওয়ার্ড</label>
+      <input class="auth-input" id="signup-pass" type="password" placeholder="কমপক্ষে ৬ অক্ষর" />
+      <button class="auth-btn" id="btn-signup" onclick="doSignup()">সাইন আপ করুন →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== USERNAME SCREEN (নতুন ইউজারের জন্য) ===== -->
+<div id="username-screen" class="hidden">
+  <div class="setup-logo">👤</div>
+  <div class="setup-title">ইউনিক ইউজারনেম</div>
+  <div class="setup-sub">একটি ইউনিক ইউজারনেম বেছে নিন।<br/>এটি দিয়ে অন্যরা আপনাকে অ্যাড করবে।</div>
+  <div class="setup-card">
+    <div id="uname-err" class="setup-err"></div>
+    <label class="setup-label">ইউজারনেম</label>
+    <input class="setup-input" id="username-input" placeholder="যেমন: raihan123" maxlength="20" />
+    <div class="setup-hint">শুধু ইংরেজি অক্ষর, সংখ্যা ও _ ব্যবহার করুন</div>
+
+    <label class="setup-label">আপনার পরিচিত নাম (বাংলা/ইংরেজি)</label>
+    <input class="setup-input" id="displayname-input" placeholder="যেমন: রাইহান" maxlength="25" />
+    <div class="setup-hint">ক্যালেন্ডারে এই নামটি দেখাবে</div>
+
+    <button class="setup-btn" id="btn-save-username" onclick="saveUsername()">এগিয়ে যান →</button>
+  </div>
+</div>
+
+<!-- ===== MEAL SETTINGS SCREEN ===== -->
+<div id="meal-settings-screen" class="hidden">
+  <div class="setup-logo">🍽️</div>
+  <div class="setup-title">মিলের সময় কাস্টমাইজ</div>
+  <div class="setup-sub">আপনি কোন কোন সময়ের মিল ট্র্যাক করতে চান?<br/>পরে সেটিংস থেকে পরিবর্তন করা যাবে।</div>
+  <div class="ms-card-wrap">
+    <div id="meal-settings-err" class="setup-err"></div>
+    <div id="meal-items-container"></div>
+    <div class="add-meal-row">
+      <input class="add-meal-input" id="new-meal-input" placeholder="নতুন মিলের নাম (যেমন: দুপুর)" maxlength="15" />
+      <button class="add-meal-btn" onclick="addMealType()">+</button>
+    </div>
+    <button class="setup-btn" onclick="saveMealSettings()">শুরু করুন →</button>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="main-app" class="hidden">
+  <div class="header">
+    <div class="header-left">
+      <div class="header-icon">🍽️</div>
+      <div>
+        <div class="header-title">মেস মিল ট্র্যাকার</div>
+        <div class="header-sub"><span class="online-dot"></span>সংযুক্ত</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="add-member-btn" onclick="openMembersModal()">+ সদস্য যোগ</button>
+      <div class="user-badge" id="user-badge"></div>
+      <button class="logout-btn" onclick="doLogout()">বের হন</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" id="tab-calendar" data-tab="calendar">📅 ক্যালেন্ডার</button>
+    <button class="tab" id="tab-summary" data-tab="summary">📊 সারসংক্ষেপ</button>
+    <button class="tab" id="tab-cost" data-tab="cost">💰 হিসাব</button>
+  </div>
+  <div class="month-nav">
+    <button id="btn-prev">‹</button>
+    <span class="month-title" id="month-title"></span>
+    <button id="btn-next">›</button>
+  </div>
+  <div id="view-calendar">
+    <div class="cal-days-header" id="day-headers"></div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div id="day-panel" class="hidden"></div>
+    <div class="legend" id="meal-legend"></div>
+  </div>
+  <div id="view-summary" class="hidden">
+    <div class="stats-grid" id="summary-stats-grid"></div>
+    <div class="member-summary" id="member-summary"></div>
+  </div>
+  <div id="view-cost" class="hidden">
+    <div id="cost-content"></div>
+  </div>
+</div>
+
+<!-- ===== ADD MEMBERS MODAL ===== -->
+<div id="members-modal" class="modal-overlay hidden" onclick="closeMembersModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">👥 সদস্য ব্যবস্থাপনা</div>
+    <div class="modal-sub">ইউনিক ইউজারনেম দিয়ে সদস্য যোগ করুন</div>
+    <div id="modal-err" class="modal-err"></div>
+    <div class="modal-input-row">
+      <input class="modal-input" id="add-member-input" placeholder="ইউজারনেম লিখুন" maxlength="20" />
+      <button class="modal-add-btn" onclick="addMemberByUsername()">যোগ করুন</button>
+    </div>
+    <div class="modal-member-list" id="modal-member-list"></div>
+    <button class="modal-close-btn" onclick="closeMembersModalDirect()">বন্ধ করুন</button>
+  </div>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+
+<!-- Firebase compat -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyCVaxonMy0tkdWBEJoZ7zR3BdkqEKnzDoc",
+  authDomain:"mess-meal-tracker-cae13.firebaseapp.com",
+  projectId:"mess-meal-tracker-cae13",
+  storageBucket:"mess-meal-tracker-cae13.firebasestorage.app",
+  messagingSenderId:"157365910082",
+  appId:"1:157365910082:web:04df58f9a4b8a3f8c7e2d1"
+});
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+const MONTHS=["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"];
+const DAYS_S=["রবি","সোম","মঙ্গল","বুধ","বৃহ","শুক্র","শনি"];
+const DAYS_F=["রবিবার","সোমবার","মঙ্গলবার","বুধবার","বৃহস্পতিবার","শুক্রবার","শনিবার"];
+const COLORS=["#10b981","#f59e0b","#8b5cf6","#f87171","#34d399","#fb923c","#60a5fa","#e879f9"];
+const MEAL_COLORS={"সকাল":"#f59e0b","রাত":"#8b5cf6","দুপুর":"#34d399","বিকাল":"#60a5fa"};
+
+// Default meal colors cycle
+const DEF_MEAL_COLORS=["#f59e0b","#8b5cf6","#34d399","#60a5fa","#fb923c","#e879f9"];
+
+let currentUser=null, myUsername="", myDisplayName="", myGroupId="";
+let members=[], mealTypes=[], viewYear, viewMonth, selectedKey=null, currentTab="calendar";
+let allRecords={}, deposits={}, toastTimer=null;
+let membersListener=null, mealsListener=null, depositsListener=null;
+let tempMealTypes=[{name:"সকাল",enabled:true},{name:"রাত",enabled:true}];
+
+function dKey(y,m,d){return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
+function mKey(y,m){return `${y}-${String(m+1).padStart(2,'0')}`}
+function parseKey(k){const[y,mo,d]=k.split("-").map(Number);return new Date(y,mo-1,d)}
+function color(name){const idx=members.findIndex(m=>m.username===name||m.displayName===name);return COLORS[Math.max(0,idx)%COLORS.length]}
+function mealColor(mealName,idx){return MEAL_COLORS[mealName]||DEF_MEAL_COLORS[idx%DEF_MEAL_COLORS.length]}
+function showToast(msg,err=false){
+  clearTimeout(toastTimer);
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.style.background=err?"#ef4444":"var(--green)"; t.style.color=err?"#fff":"#000";
+  t.classList.remove("hidden");
+  toastTimer=setTimeout(()=>t.classList.add("hidden"),2500);
+}
+function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display="block"}
+function hideErr(id){document.getElementById(id).style.display="none"}
+
+// ===== AUTH TAB SWITCH =====
+function switchAuthTab(tab){
+  document.getElementById("tab-login").classList.toggle("active",tab==="login");
+  document.getElementById("tab-signup").classList.toggle("active",tab==="signup");
+  document.getElementById("login-form").classList.toggle("hidden",tab!=="login");
+  document.getElementById("signup-form").classList.toggle("hidden",tab!=="signup");
+  hideErr("auth-err");
+}
+
+// ===== LOGIN =====
+async function doLogin(){
+  const email=document.getElementById("login-email").value.trim();
+  const pass=document.getElementById("login-pass").value;
+  if(!email||!pass){showErr("auth-err","ইমেইল ও পাসওয়ার্ড দিন!");return}
+  const btn=document.getElementById("btn-login");
+  btn.disabled=true; btn.innerHTML='<span class="loading-spinner"></span>লগইন হচ্ছে...';
+  try{
+    await auth.signInWithEmailAndPassword(email,pass);
+  }catch(e){
+    let msg="লগইন ব্যর্থ হয়েছে";
+    if(e.code==="auth/user-not-found")msg="এই ইমেইলে কোনো অ্যাকাউন্ট নেই";
+    else if(e.code==="auth/wrong-password")msg="পাসওয়ার্ড ভুল";
+    else if(e.code==="auth/invalid-email")msg="সঠিক ইমেইল দিন";
+    showErr("auth-err",msg);
+    btn.disabled=false; btn.innerHTML="লগইন করুন →";
+  }
+}
+
+// ===== SIGNUP =====
+async function doSignup(){
+  const email=document.getElementById("signup-email").value.trim();
+  const pass=document.getElementById("signup-pass").value;
+  if(!email||!pass){showErr("auth-err","ইমেইল ও পাসওয়ার্ড দিন!");return}
+  if(pass.length<6){showErr("auth-err","পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে");return}
+  const btn=document.getElementById("btn-signup");
+  btn.disabled=true; btn.innerHTML='<span class="loading-spinner"></span>তৈরি হচ্ছে...';
+  try{
+    await auth.createUserWithEmailAndPassword(email,pass);
+  }catch(e){
+    let msg="সাইন আপ ব্যর্থ হয়েছে";
+    if(e.code==="auth/email-already-in-use")msg="এই ইমেইল আগে থেকেই রেজিস্টার্ড";
+    else if(e.code==="auth/invalid-email")msg="সঠিক ইমেইল দিন";
+    showErr("auth-err",msg);
+    btn.disabled=false; btn.innerHTML="সাইন আপ করুন →";
+  }
+}
+
+// ===== LOGOUT =====
+async function doLogout(){
+  if(membersListener)membersListener();
+  if(mealsListener)mealsListener();
+  if(depositsListener)depositsListener();
+  await auth.signOut();
+}
+
+// ===== AUTH STATE =====
+auth.onAuthStateChanged(async user=>{
+  if(!user){
+    showScreen("auth-screen");
+    document.getElementById("btn-login").disabled=false;
+    document.getElementById("btn-login").innerHTML="লগইন করুন →";
+    document.getElementById("btn-signup").disabled=false;
+    document.getElementById("btn-signup").innerHTML="সাইন আপ করুন →";
+    return;
+  }
+  currentUser=user;
+  // check if user has a profile
+  const profileSnap=await db.collection("users").doc(user.uid).get();
+  if(!profileSnap.exists){
+    showScreen("username-screen");
+  } else {
+    const profile=profileSnap.data();
+    myUsername=profile.username;
+    myDisplayName=profile.displayName;
+    myGroupId=profile.groupId||user.uid;
+    // check if meal settings exist
+    const groupSnap=await db.collection("groups").doc(myGroupId).get();
+    if(!groupSnap.exists){
+      showScreen("meal-settings-screen");
+      renderMealSettings();
+    } else {
+      mealTypes=groupSnap.data().mealTypes||[{name:"সকাল",enabled:true},{name:"রাত",enabled:true}];
+      startApp();
+    }
+  }
+});
+
+function showScreen(id){
+  ["auth-screen","username-screen","meal-settings-screen","main-app"].forEach(s=>{
+    document.getElementById(s).classList.toggle("hidden",s!==id);
+  });
+}
+
+// ===== SAVE USERNAME =====
+async function saveUsername(){
+  const uname=document.getElementById("username-input").value.trim().toLowerCase();
+  const dname=document.getElementById("displayname-input").value.trim();
+  if(!uname){showErr("uname-err","ইউজারনেম দিন!");return}
+  if(!/^[a-z0-9_]+$/.test(uname)){showErr("uname-err","শুধু a-z, 0-9 ও _ ব্যবহার করুন");return}
+  if(uname.length<3){showErr("uname-err","ইউজারনেম কমপক্ষে ৩ অক্ষর হতে হবে");return}
+  if(!dname){showErr("uname-err","আপনার নাম দিন!");return}
+  hideErr("uname-err");
+  const btn=document.getElementById("btn-save-username");
+  btn.disabled=true; btn.textContent="চেক হচ্ছে...";
+  // check uniqueness
+  const snap=await db.collection("usernames").doc(uname).get();
+  if(snap.exists){showErr("uname-err","এই ইউজারনেম আগে থেকেই নেওয়া হয়েছে!");btn.disabled=false;btn.textContent="এগিয়ে যান →";return}
+  // save
+  const uid=currentUser.uid;
+  await db.collection("usernames").doc(uname).set({uid});
+  await db.collection("users").doc(uid).set({username:uname,displayName:dname,groupId:uid,uid});
+  myUsername=uname; myDisplayName=dname; myGroupId=uid;
+  btn.disabled=false; btn.textContent="এগিয়ে যান →";
+  showScreen("meal-settings-screen");
+  renderMealSettings();
+}
+
+// ===== MEAL SETTINGS =====
+function renderMealSettings(){
+  const cont=document.getElementById("meal-items-container");
+  cont.innerHTML=tempMealTypes.map((m,i)=>`
+    <div class="ms-meal-item" id="meal-item-${i}">
+      <div class="ms-meal-info">
+        <input class="ms-meal-name-input" value="${m.name}" onchange="tempMealTypes[${i}].name=this.value" />
+        <span class="ms-meal-time" style="color:${DEF_MEAL_COLORS[i%DEF_MEAL_COLORS.length]}">● মিল ${i+1}</span>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" ${m.enabled?"checked":""} onchange="tempMealTypes[${i}].enabled=this.checked" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>`).join("");
+}
+function addMealType(){
+  const inp=document.getElementById("new-meal-input");
+  const name=inp.value.trim();
+  if(!name){return}
+  if(tempMealTypes.length>=6){showErr("meal-settings-err","সর্বোচ্চ ৬টি মিল যোগ করা যাবে");return}
+  tempMealTypes.push({name,enabled:true});
+  inp.value="";
+  renderMealSettings();
+}
+async function saveMealSettings(){
+  const enabled=tempMealTypes.filter(m=>m.enabled&&m.name.trim());
+  if(!enabled.length){showErr("meal-settings-err","অন্তত একটি মিল সক্রিয় রাখুন!");return}
+  mealTypes=enabled;
+  // create group doc
+  await db.collection("groups").doc(myGroupId).set({
+    ownerId:currentUser.uid,
+    ownerUsername:myUsername,
+    mealTypes:mealTypes,
+    members:[{uid:currentUser.uid,username:myUsername,displayName:myDisplayName}],
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  // update user groupId
+  await db.collection("users").doc(currentUser.uid).update({groupId:myGroupId});
+  startApp();
+}
+
+// ===== START APP =====
+function startApp(){
+  showScreen("main-app");
+  document.getElementById("user-badge").textContent=myDisplayName||myUsername;
+  const now=new Date(); viewYear=now.getFullYear(); viewMonth=now.getMonth();
+  document.getElementById("day-headers").innerHTML=DAYS_S.map(d=>`<div class="cal-day-name">${d}</div>`).join("");
+  document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>switchTab(b.dataset.tab)));
+  document.getElementById("btn-prev").addEventListener("click",()=>changeMonth(-1));
+  document.getElementById("btn-next").addEventListener("click",()=>changeMonth(1));
+  listenToGroup();
+}
+
+function listenToGroup(){
+  // listen to group members + settings
+  if(membersListener)membersListener();
+  membersListener=db.collection("groups").doc(myGroupId).onSnapshot(snap=>{
+    if(!snap.exists)return;
+    const data=snap.data();
+    members=data.members||[];
+    mealTypes=data.mealTypes||mealTypes;
+    render();
+  });
+  // listen to meals
+  if(mealsListener)mealsListener();
+  mealsListener=db.collection("groups").doc(myGroupId).collection("meals").onSnapshot(snap=>{
+    allRecords={};
+    snap.forEach(d=>{allRecords[d.id]=d.data()});
+    render();
+  });
+  // listen to deposits
+  if(depositsListener)depositsListener();
+  depositsListener=db.collection("groups").doc(myGroupId).collection("deposits").onSnapshot(snap=>{
+    deposits={};
+    snap.forEach(d=>{deposits[d.id]=d.data()});
+    if(currentTab==="cost")renderCost();
+  });
+}
+
+// ===== MEMBERS MODAL =====
+function openMembersModal(){
+  document.getElementById("members-modal").classList.remove("hidden");
+  renderMembersList();
+}
+function closeMembersModal(e){
+  if(e.target.id==="members-modal")closeMembersModalDirect();
+}
+function closeMembersModalDirect(){
+  document.getElementById("members-modal").classList.add("hidden");
+  document.getElementById("add-member-input").value="";
+  hideErr("modal-err");
+}
+function renderMembersList(){
+  const list=document.getElementById("modal-member-list");
+  list.innerHTML=members.map(m=>{
+    const isOwner=m.uid===currentUser.uid||members.indexOf(m)===0;
+    const isMe=m.uid===currentUser.uid;
+    return `<div class="modal-member-item ${isOwner?'owner':''}">
+      <div class="modal-member-name">
+        <span>${m.displayName}</span>
+        <span style="font-size:11px;color:var(--muted)">@${m.username}</span>
+        ${isOwner?'<span class="owner-tag">মালিক</span>':''}
+        ${isMe&&!isOwner?'<span class="you-tag">আপনি</span>':''}
+      </div>
+      ${!isOwner&&!isMe?`<button class="remove-member-btn" onclick="removeMember('${m.uid}','${m.username}')">×</button>`:'<span></span>'}
+    </div>`;
+  }).join("")||'<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px">কোনো সদস্য নেই</div>';
+}
+async function addMemberByUsername(){
+  const uname=document.getElementById("add-member-input").value.trim().toLowerCase();
+  if(!uname){showErr("modal-err","ইউজারনেম দিন!");return}
+  hideErr("modal-err");
+  // find uid by username
+  const usnap=await db.collection("usernames").doc(uname).get();
+  if(!usnap.exists){showErr("modal-err","এই ইউজারনেম খুঁজে পাওয়া যায়নি!");return}
+  const targetUid=usnap.data().uid;
+  if(members.find(m=>m.uid===targetUid)){showErr("modal-err","এই সদস্য আগেই যোগ করা আছেন!");return}
+  // get user profile
+  const profileSnap=await db.collection("users").doc(targetUid).get();
+  if(!profileSnap.exists){showErr("modal-err","এই ইউজারের প্রোফাইল পাওয়া যায়নি");return}
+  const profile=profileSnap.data();
+  // add to group
+  await db.collection("groups").doc(myGroupId).update({
+    members:firebase.firestore.FieldValue.arrayUnion({
+      uid:targetUid,
+      username:profile.username,
+      displayName:profile.displayName
+    })
+  });
+  // update target user's groupId so they can access this group
+  await db.collection("users").doc(targetUid).update({groupId:myGroupId});
+  document.getElementById("add-member-input").value="";
+  showToast("✅ "+profile.displayName+" যোগ হয়েছেন!");
+  renderMembersList();
+}
+async function removeMember(uid,username){
+  if(!confirm(username+" কে গ্রুপ থেকে সরাবেন?"))return;
+  const memberToRemove=members.find(m=>m.uid===uid);
+  if(!memberToRemove)return;
+  await db.collection("groups").doc(myGroupId).update({
+    members:firebase.firestore.FieldValue.arrayRemove(memberToRemove)
+  });
+  showToast(memberToRemove.displayName+" সরিয়ে দেওয়া হয়েছে");
+  renderMembersList();
+}
+
+// ===== TAB / MONTH =====
+function switchTab(tab){
+  currentTab=tab;
+  ["calendar","summary","cost"].forEach(t=>{
+    document.getElementById("view-"+t).classList.toggle("hidden",t!==tab);
+    document.getElementById("tab-"+t).classList.toggle("active",t===tab);
+  });
+  render();
+}
+function changeMonth(dir){
+  viewMonth+=dir;
+  if(viewMonth<0){viewMonth=11;viewYear--}
+  if(viewMonth>11){viewMonth=0;viewYear++}
+  selectedKey=null; render();
+}
+function render(){
+  document.getElementById("month-title").textContent=`${MONTHS[viewMonth]} ${viewYear}`;
+  if(currentTab==="calendar")renderCalendar();
+  else if(currentTab==="summary")renderSummary();
+  else renderCost();
+}
+
+// ===== CALENDAR =====
+function renderCalendar(){
+  // legend
+  const legendDiv=document.getElementById("meal-legend");
+  legendDiv.innerHTML=mealTypes.map((m,i)=>`<div class="legend-item"><span style="background:${mealColor(m.name,i)};width:8px;height:8px;border-radius:50%;display:inline-block"></span> ${m.name} বন্ধ</div>`).join("");
+
+  const now=new Date(), todayK=dKey(now.getFullYear(),now.getMonth(),now.getDate());
+  const first=new Date(viewYear,viewMonth,1).getDay(), dim=new Date(viewYear,viewMonth+1,0).getDate();
+  let html="";
+  for(let i=0;i<first;i++)html+=`<div></div>`;
+  for(let d=1;d<=dim;d++){
+    const k=dKey(viewYear,viewMonth,d), dd=allRecords[k]||{};
+    const hasAny=Object.keys(dd).length>0, isT=k===todayK, isS=k===selectedKey;
+    let cls="cal-cell"+(hasAny?" has-record":"")+(isT?" today":"")+(isS?" selected":"");
+    let dots="";
+    members.forEach(m=>{
+      const rec=dd[m.username]||{};
+      mealTypes.forEach((mt,idx)=>{
+        if(rec[mt.name])dots+=`<div class="cal-dot" style="background:${mealColor(mt.name,idx)}"></div>`;
+      });
+    });
+    html+=`<div class="${cls}" data-k="${k}"><span class="cal-num">${d}</span><div class="cal-dots">${dots}</div></div>`;
+  }
+  document.getElementById("cal-grid").innerHTML=html;
+  document.querySelectorAll(".cal-cell[data-k]").forEach(el=>{
+    el.addEventListener("click",()=>{selectedKey=selectedKey===el.dataset.k?null:el.dataset.k;renderCalendar()});
+  });
+  renderDayPanel();
+}
+
+function renderDayPanel(){
+  const panel=document.getElementById("day-panel");
+  if(!selectedKey){panel.className="hidden";return}
+  const d=parseKey(selectedKey), dd=allRecords[selectedKey]||{};
+  let rows=members.map(m=>{
+    const rec=dd[m.username]||{}, isMe=(m.uid===currentUser.uid), col=color(m.username);
+    let toggles=mealTypes.map((mt,idx)=>{
+      const isOff=!!rec[mt.name];
+      return `<div class="meal-toggle">
+        <span class="m-label" style="color:${mealColor(mt.name,idx)}">${mt.name}</span>
+        <button class="${isMe?(isOff?'btn-off':'btn-on'):'btn-disabled'}"
+          ${isMe?`data-uname="${m.username}" data-dk="${selectedKey}" data-meal="${mt.name}"`:''}
+          >${isOff?"বন্ধ":"চালু"}</button>
+      </div>`;
+    }).join("");
+    return `<div class="member-row">
+      <div class="member-name" style="color:${isMe?'var(--green)':col}">${m.displayName}${isMe?'<span class="me-tag">আমি</span>':''}</div>
+      <div class="meal-toggles">${toggles}</div>
+    </div>`;
+  }).join("");
+  panel.className="day-panel";
+  panel.innerHTML=`<div class="day-panel-header">
+    <div class="day-panel-date">${DAYS_F[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}</div>
+    <div class="day-panel-hint">শুধু নিজের মিল পরিবর্তন করতে পারবেন</div>
+  </div>${rows}`;
+  panel.querySelectorAll("[data-uname]").forEach(btn=>{
+    btn.addEventListener("click",()=>toggleMeal(btn.dataset.uname,btn.dataset.dk,btn.dataset.meal));
+  });
+}
+
+function toggleMeal(username,dk,mealName){
+  const ref=db.collection("groups").doc(myGroupId).collection("meals").doc(dk);
+  ref.get().then(snap=>{
+    const data=snap.exists?snap.data():{};
+    const md=data[username]||{};
+    if(md[mealName])delete md[mealName]; else md[mealName]=true;
+    if(Object.keys(md).length===0)delete data[username]; else data[username]=md;
+    ref.set(data).then(()=>{
+      const isOff=data[username]&&data[username][mealName];
+      showToast(isOff?`🔴 ${mealName} বন্ধ`:`✅ ${mealName} চালু`);
+    });
+  });
+}
+
+// ===== SUMMARY =====
+function renderSummary(){
+  const dim=new Date(viewYear,viewMonth+1,0).getDate();
+  const counts={};
+  mealTypes.forEach(mt=>counts[mt.name]=0);
+  const ms={};
+  members.forEach(m=>{
+    ms[m.username]={displayName:m.displayName,meals:0};
+    mealTypes.forEach(mt=>{ms[m.username][mt.name]=0});
+  });
+  for(let d=1;d<=dim;d++){
+    const k=dKey(viewYear,viewMonth,d), dd=allRecords[k]||{};
+    members.forEach(m=>{
+      const rec=dd[m.username]||{};
+      mealTypes.forEach(mt=>{
+        if(rec[mt.name]){counts[mt.name]++;ms[m.username][mt.name]++}
+      });
+    });
+  }
+  members.forEach(m=>{
+    const totalOff=mealTypes.reduce((s,mt)=>s+(ms[m.username][mt.name]||0),0);
+    ms[m.username].meals=dim*mealTypes.length-totalOff;
+  });
+
+  // stats grid
+  const grid=document.getElementById("summary-stats-grid");
+  const clss=["green","yellow","purple","green","yellow","purple"];
+  const emojs=["☀️","🌙","🌅","🕐","🍽️","⭐"];
+  grid.style.gridTemplateColumns=`repeat(${Math.min(mealTypes.length+1,3)},1fr)`;
+  let statsHtml=mealTypes.map((mt,i)=>`
+    <div class="stat-card ${clss[i%clss.length]}">
+      <div style="font-size:16px">${emojs[i]}</div>
+      <div class="stat-num">${counts[mt.name]}</div>
+      <div class="stat-label">${mt.name} বন্ধ</div>
+    </div>`).join("");
+  const totalOff=mealTypes.reduce((s,mt)=>s+counts[mt.name],0);
+  statsHtml+=`<div class="stat-card green"><div style="font-size:16px">🍽️</div><div class="stat-num">${totalOff}</div><div class="stat-label">মোট বন্ধ</div></div>`;
+  grid.innerHTML=statsHtml;
+
+  document.getElementById("member-summary").innerHTML=members.map(m=>{
+    const s=ms[m.username], col=color(m.username), isMe=(m.uid===currentUser.uid);
+    return `<div class="ms-card">
+      <div class="ms-name" style="color:${col}">${m.displayName}${isMe?'<span class="me-tag">আমি</span>':''}</div>
+      <div class="ms-stats">
+        ${mealTypes.map((mt,i)=>`<div class="ms-stat">
+          <div class="ms-stat-num" style="color:${mealColor(mt.name,i)}">${s[mt.name]}</div>
+          <div class="ms-stat-label">${mt.name} বন্ধ</div>
+        </div>`).join("")}
+        <div class="ms-stat">
+          <div class="ms-stat-num" style="color:var(--green)">${s.meals}</div>
+          <div class="ms-stat-label">🍽️ মোট মিল</div>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ===== COST =====
+function renderCost(){
+  const mk=mKey(viewYear,viewMonth), dim=new Date(viewYear,viewMonth+1,0).getDate();
+  const md=deposits[mk]||{};
+  const mc={};let totalMeals=0;
+  members.forEach(m=>{mc[m.username]=0});
+  for(let d=1;d<=dim;d++){
+    const k=dKey(viewYear,viewMonth,d), dd=allRecords[k]||{};
+    members.forEach(m=>{
+      let meals=mealTypes.length;
+      const rec=dd[m.username]||{};
+      mealTypes.forEach(mt=>{if(rec[mt.name])meals--});
+      mc[m.username]+=meals; totalMeals+=meals;
+    });
+  }
+  let totalFund=0; members.forEach(m=>{totalFund+=parseFloat(md[m.username]||0)});
+  const perMeal=totalMeals>0?totalFund/totalMeals:0;
+
+  let html=`<div class="section-title">💰 ${MONTHS[viewMonth]} ${viewYear} — মাসিক হিসাব</div>
+  <div class="total-fund-card">
+    <div><div class="fund-label">মোট জমাকৃত টাকা</div><div class="fund-amount">৳ ${totalFund.toLocaleString()}</div><div class="fund-sub">মোট মিল: ${totalMeals} টি</div></div>
+    <div class="per-meal-badge"><div class="per-meal-num">৳ ${perMeal>0?perMeal.toFixed(2):'—'}</div><div class="per-meal-label">প্রতি মিল খরচ</div></div>
+  </div>
+  <div class="section-title">👤 সদস্যদের হিসাব</div>`;
+
+  members.forEach(m=>{
+    const dep=parseFloat(md[m.username]||0), cost=perMeal*mc[m.username], diff=dep-cost;
+    const col=color(m.username), isMe=(m.uid===currentUser.uid);
+    let bal="";
+    if(totalFund===0)bal=`<div class="balance-pill zero">জমা দেওয়া হয়নি</div>`;
+    else if(Math.abs(diff)<0.5)bal=`<div class="balance-pill zero">✅ হিসাব সমান</div>`;
+    else if(diff>0)bal=`<div class="balance-pill positive">✅ ${m.displayName} ৳${diff.toFixed(2)} ফেরত পাবেন</div>`;
+    else bal=`<div class="balance-pill negative">⚠️ ${m.displayName} আরও ৳${Math.abs(diff).toFixed(2)} দিতে হবে</div>`;
+
+    const depSection=isMe
+      ?`<div class="mc-deposit-area"><input class="deposit-input" id="dep-${m.username}" type="number" placeholder="টাকা" min="0" value="${dep>0?dep:''}"/><button class="deposit-save-btn" data-dep="${m.username}">সেভ</button></div>`
+      :`<div class="deposit-lock">৳ ${dep>0?dep.toLocaleString():'—'}</div>`;
+
+    let cCls="member-cost-card"+(totalFund>0&&diff>0.5?" overpaid":totalFund>0&&diff<-0.5?" underpaid":"");
+    html+=`<div class="${cCls}">
+      <div class="mc-top"><div class="mc-name" style="color:${col}">${m.displayName}${isMe?'<span class="me-tag">আমি</span>':''}</div>${depSection}</div>
+      <div class="mc-stats">
+        <div class="mc-stat"><div class="mc-stat-num" style="color:var(--green)">${mc[m.username]}</div><div class="mc-stat-label">মোট মিল</div></div>
+        <div class="mc-stat"><div class="mc-stat-num" style="color:var(--yellow)">৳${dep.toLocaleString()}</div><div class="mc-stat-label">জমা দিয়েছেন</div></div>
+        <div class="mc-stat"><div class="mc-stat-num" style="color:${diff<-0.5?'var(--red)':'var(--purple)'}">৳${cost.toFixed(0)}</div><div class="mc-stat-label">খরচ হয়েছে</div></div>
+      </div>${bal}</div>`;
+  });
+
+  document.getElementById("cost-content").innerHTML=html;
+  document.querySelectorAll("[data-dep]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const inp=document.getElementById("dep-"+btn.dataset.dep);
+      const val=parseFloat(inp.value);
+      if(isNaN(val)||val<0){showToast("সঠিক টাকার পরিমাণ দিন",true);return}
+      const ref=db.collection("groups").doc(myGroupId).collection("deposits").doc(mKey(viewYear,viewMonth));
+      ref.get().then(snap=>{
+        const data=snap.exists?snap.data():{};
+        data[btn.dataset.dep]=val;
+        ref.set(data).then(()=>showToast("✅ জমা সেভ হয়েছে"));
+      });
+    });
+  });
+}
+
+// Enter key support
+document.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){
+    const active=document.activeElement;
+    if(active.id==="login-email"||active.id==="login-pass")doLogin();
+    else if(active.id==="signup-email"||active.id==="signup-pass")doSignup();
+    else if(active.id==="username-input"||active.id==="displayname-input")saveUsername();
+    else if(active.id==="add-member-input")addMemberByUsername();
+    else if(active.id==="new-meal-input")addMealType();
+  }
+});
+</script>
+</body>
+</html>
