@@ -1,3 +1,17 @@
-just use this link on any browser & add it on your home screen 
+# 🍽️ মেস মিল ট্র্যাকার
 
-https://raihan7505.github.io/Meal-Tracker/
+বাংলাদেশের মেসবাসী ছাত্র ও কর্মজীবীদের জন্য তৈরি সম্পূর্ণ বিনামূল্যের বাংলা ওয়েব অ্যাপ।
+
+## ✨ ফিচারসমূহ
+- 📅 ক্যালেন্ডারে প্রতিদিনের মিল ট্র্যাক
+- 💰 মাস শেষে অটোমেটিক হিসাব
+- 👑 ম্যানেজার সিস্টেম
+- 💬 গ্রুপ মেসেজ ও নোট
+- 🔔 রিয়েল-টাইম নোটিফিকেশন
+- 📱 মোবাইল ফ্রেন্ডলি
+
+## 🛠️ Technology
+Firebase Auth • Cloud Firestore • Vanilla JS • HTML/CSS
+
+## 🔗 Live Demo
+[raihan7505.github.io/Meal-Tracker](https://raihan7505.github.io/Meal-Tracker/)
